@@ -14,7 +14,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using System.IO;
-using Microsoft.VisualStudio.Services.Integration;
 
 namespace LandOfJoe.NuspecPackager
 {
@@ -343,8 +342,7 @@ namespace LandOfJoe.NuspecPackager
 
         private void WriteOutput(string message, bool showInStatus = false)
         {
-            OutputWindowHelper.OutputString(this, message + Environment.NewLine);
-            OutputWindowHelper.ActivateOutputWindow(this);
+            Trace.WriteLine(message + Environment.NewLine);
             if (showInStatus)
             {
                 ShowStatus(message);
