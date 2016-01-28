@@ -67,6 +67,9 @@ namespace LandOfJoe.NuspecPackager
             {
                 base.Initialize();
 
+                // save instance
+                Instance = this;
+
                 // Add our command handlers for menu (commands must exist in the .vsct file)
                 OleMenuCommandService mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
                 if (null != mcs)
@@ -271,7 +274,7 @@ namespace LandOfJoe.NuspecPackager
             }
             return true;
         }
-#endregion
+        #endregion
 
 
         private NuspecItemConfig GetItemConfig(NuspecItemInfo item)
@@ -287,6 +290,11 @@ namespace LandOfJoe.NuspecPackager
             if (optionPage.UseDefaultNuGetExePath)
             {
                 defaultConfig.NuGetExe = Path.Combine(Path.GetDirectoryName(dte.Solution.FullName), ".nuget\\NuGet.exe");
+            } else
+            {
+                // append nuget.exe to path
+                if (!string.IsNullOrEmpty(defaultConfig.NuGetExe))
+                    defaultConfig.NuGetExe = Path.Combine(defaultConfig.NuGetExe, "NuGet.exe");
             }
 
             //get config otions from folder's default config file
@@ -342,12 +350,37 @@ namespace LandOfJoe.NuspecPackager
 
         private void WriteOutput(string message, bool showInStatus = false)
         {
-            Trace.WriteLine(message + Environment.NewLine);
+            // write using alternative method
+            WriteToGeneralOutputWindow(message);
             if (showInStatus)
             {
                 ShowStatus(message);
             }
         }
+
+        /// <summary>
+        /// Write to VS output pane - 
+        /// </summary>
+        /// <remarks>
+        /// </remarks>
+        /// <param name="message"></param>
+        private void WriteToGeneralOutputWindow(string message)
+        {
+            try
+            {
+                Logger.Log(message);
+            }
+            catch (Exception e)
+            {
+                EventLog.WriteEntry("NuSpecPackager", message);
+                EventLog.WriteEntry("NuSpecPackager", e.Message + Environment.NewLine + e.StackTrace);
+            }
+        }
+
+        /// <summary>
+        /// Return single instance of NuspecPackager
+        /// </summary>
+        public static NuspecPackagerPackage Instance { get; private set; }
 
         private void ShowStatus(string message)
         {
